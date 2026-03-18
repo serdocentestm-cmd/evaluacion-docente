@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Evaluación Docente — CBTis 281</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:system-ui,sans-serif;background:#f9fafb;min-height:100vh}
+  .btn{cursor:pointer;border:none;border-radius:10px;font-weight:700;font-size:15px;padding:12px 20px}
+  .btn-primary{background:#6366f1;color:#fff;width:100%;padding:14px;font-size:16px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
+  .btn-secondary{background:#fff;color:#6b7280;border:1px solid #e5e7eb;width:100%;padding:12px;border-radius:10px;cursor:pointer;font-size:14px}
+  .card{background:#fff;border-radius:16px;box-shadow:0 2px 16px rgba(0,0,0,.06);padding:28px;margin-bottom:20px}
+  .header{background:#6366f1;color:#fff;padding:16px 24px}
+  .header h2{margin:0;font-size:18px}
+  .chip{padding:4px 12px;border-radius:99px;font-size:12px;font-weight:600;display:inline-block;margin:3px}
+  .opt-btn{padding:9px 16px;border-radius:99px;border:2px solid #e5e7eb;background:#fff;color:#374151;font-size:14px;cursor:pointer;transition:all .15s;white-space:nowrap;margin:4px}
+  .opt-btn.sel{color:#fff;border-color:transparent}
+  .progress-bar{background:#e5e7eb;border-radius:99px;height:8px;margin-bottom:6px}
+  .progress-fill{background:#6366f1;border-radius:99px;height:8px;transition:width .4s}
+  input,select,textarea{width:100%;padding:12px 14px;border-radius:8px;border:1px solid #d1d5db;font-size:14px;font-family:system-ui}
+  textarea{resize:vertical}
+  .label-sm{font-size:11px;color:#7c3aed;text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:4px}
+  .center{display:flex;align-items:center;justify-content:center;min-height:100vh}
+  .token-input{font-size:22px;font-weight:800;color:#6366f1;letter-spacing:6px;text-align:center;background:#fff;border:2px solid #c4b5fd;border-radius:8px;padding:10px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwU1RMwz_wRRYtxhEdCtaSZalt_bslIS62jY13FS6U2RdJcLhLaYdeKq7EhkRRzH8Ub-g/exec";
+const ADMIN_PASS = "prie200190";
+
+const PREGUNTAS = [
+  "¿Es evidente que el/la docente prepara previamente sus clases y los temas que imparte?",
+  "¿Consideras que las actividades realizadas en la materia están alineadas con el programa de estudios y los contenidos desarrollados?",
+  "¿El/la docente imparte sus clases con claridad, precisión y demuestra dominio de los temas?",
+  "¿El/la docente utiliza recursos didácticos y herramientas tecnológicas que favorecen el aprendizaje?",
+  "¿Consideras que el/la docente emplea estrategias adecuadas para el logro de los objetivos de la materia?",
+  "¿El/la docente comunica de manera clara los criterios de evaluación de la asignatura?",
+  "¿El/la docente implementa dinámicas o actividades que hacen las clases más interesantes y facilitan tu atención y aprendizaje?",
+  "¿Los instrumentos de evaluación (exámenes, trabajos, etc.) están relacionados con los contenidos abordados en clase?",
+  "¿El/la docente proporciona información oportuna sobre tu desempeño académico (calificaciones, retroalimentación, avances, etc.)?",
+  "En general, ¿cómo consideras el desempeño del/de la docente en esta materia?"
+];
+const FREC = ["Siempre","Casi siempre","Alguna vez","Rara vez","Nunca"];
+const GEN  = ["Excelente","Bueno","Regular","Deficiente"];
+const COLF = {Siempre:"#10b981","Casi siempre":"#6366f1","Alguna vez":"#f59e0b","Rara vez":"#f97316",Nunca:"#ef4444"};
+const COLG = {Excelente:"#10b981",Bueno:"#6366f1",Regular:"#f59e0b",Deficiente:"#ef4444"};
+
+const GRUPOS = {
+  "2A":[{m:"ESCOBEDO ROBLEDO CLAUDIA LYLY",mat:"Lengua y Comunicación II"},{m:"GONZALEZ RAMOS LAURA ALICIA",mat:"Pensamiento Matemático II"},{m:"GONZALEZ RAMOS LAURA ALICIA",mat:"Ciencias Sociales II"},{m:"LICON AGUILERA KARINA AMELIA",mat:"Ejecuta procedimientos administrativos del área de recursos"},{m:"QUIÑONEZ TARANGO ALENKA",mat:"Ciencias Naturales II"},{m:"RODRIGUEZ DIAZ NAIELI",mat:"Gestiona documentación del área de recursos humanos"},{m:"SILVA GOMEZ KAROL ESTEFANIA",mat:"Ingles II"},{m:"VILLALOBOS ORTEGA BRENDA SARAHI",mat:"Cultura Digital II"}],
+  "2B":[{m:"AYALA HARO PETRA",mat:"Prepara reactivos y soluciones"},{m:"DIAZ VAZQUEZ CECILIA",mat:"Prepara equipo de laboratorio químico"},{m:"ESCARZAGA RAMIREZ KARLA LUCINA",mat:"Realiza toma de muestras"},{m:"GONZALEZ RAMOS LAURA ALICIA",mat:"Pensamiento Matemático II"},{m:"GONZALEZ RAMOS LAURA ALICIA",mat:"Ciencias Sociales II"},{m:"HERRERA CRUZ YURIKO ANAHI",mat:"Ingles II"},{m:"PADILLA GONZALEZ CLARA ESMERALDA",mat:"Lengua y Comunicación II"},{m:"QUIÑONEZ TARANGO ALENKA",mat:"Ciencias Naturales II"},{m:"VILLALOBOS ORTEGA BRENDA SARAHI",mat:"Cultura Digital II"}],
+  "2C":[{m:"ESCOBEDO ROBLEDO CLAUDIA LYLY",mat:"Lengua y Comunicación II"},{m:"GONZALEZ RAMOS LAURA ALICIA",mat:"Ciencias Sociales II"},{m:"PADILLA GONZALEZ CLARA ESMERALDA",mat:"Ejecuta procedimientos administrativos"},{m:"QUIÑONEZ TARANGO ALENKA",mat:"Ciencias Naturales II"},{m:"RODRIGUEZ DIAZ NAIELI",mat:"Gestiona documentación del área de recursos humanos"},{m:"SILVA GOMEZ KAROL ESTEFANIA",mat:"Ingles II"},{m:"VILLALOBOS ORTEGA BRENDA SARAHI",mat:"Cultura Digital II"},{m:"VILLALOBOS ORTEGA BRENDA SARAHI",mat:"Pensamiento Matemático II"}],
+  "2D":[{m:"BARCENAS LOPEZ MARCO DE JESUS",mat:"Cultura Digital II"},{m:"BARCENAS LOPEZ MARCO DE JESUS",mat:"Pensamiento Matemático II"},{m:"CHAVEZ CHAVEZ EDGAR RICARDO",mat:"Ciencias Sociales II"},{m:"ESCARZAGA RAMIREZ KARLA LUCINA",mat:"Realiza toma de muestras"},{m:"ESCOBEDO ROBLEDO CLAUDIA LYLY",mat:"Lengua y Comunicación II"},{m:"GARCIA LORENZO TERESITA DE JESUS",mat:"Prepara reactivos y soluciones"},{m:"IBARRA ACERO NAYELI JAQUELINA",mat:"Ciencias Naturales II"},{m:"PEREZ ESPARZA GEOVANA ALEJANDRA",mat:"Prepara equipo de laboratorio"},{m:"SILVA GOMEZ KAROL ESTEFANIA",mat:"Ingles II"}],
+  "2E":[{m:"BARCENAS LOPEZ MARCO DE JESUS",mat:"Cultura Digital II"},{m:"BARCENAS LOPEZ MARCO DE JESUS",mat:"Pensamiento Matemático II"},{m:"CHAGOYA CORTES PAULINA YOLANDA",mat:"Ejecuta procedimientos administrativos"},{m:"ESCOBEDO ROBLEDO CLAUDIA LYLY",mat:"Lengua y Comunicación II"},{m:"HERRERA CRUZ YURIKO ANAHI",mat:"Ingles II"},{m:"IBARRA ACERO NAYELI JAQUELINA",mat:"Ciencias Naturales II"},{m:"MEDINA CARLOS",mat:"Ciencias Sociales II"},{m:"JOSE LUIS GUZMAN AVILA",mat:"Gestiona documentación del área de recursos humanos"}],
+  "2F":[{m:"BARCENAS LOPEZ MARCO DE JESUS",mat:"Cultura Digital II"},{m:"BARCENAS LOPEZ MARCO DE JESUS",mat:"Pensamiento Matemático II"},{m:"CASTRO LUIS MARTIN",mat:"Prepara reactivos y soluciones"},{m:"MEDINA CARLOS",mat:"Ciencias Sociales II"},{m:"PEREZ ESPARZA GEOVANA ALEJANDRA",mat:"Realiza toma de muestras"},{m:"PORTUGAL RODRIGUEZ ALMA GUADALUPE",mat:"Lengua y Comunicación II"},{m:"QUIÑONEZ TARANGO ALENKA",mat:"Ciencias Naturales II"},{m:"RODRIGUEZ ELIZALDE ISRAEL",mat:"Prepara equipo de laboratorio"},{m:"SALAS DE LA CRUZ MARIA PAULA",mat:"Ingles II"}],
+  "2G":[{m:"BARCENAS LOPEZ MARCO DE JESUS",mat:"Cultura Digital II"},{m:"BERNAL REYES RICARDO",mat:"Pensamiento Matemático II"},{m:"IBARRA ACERO NAYELI JAQUELINA",mat:"Ciencias Naturales II"},{m:"MEDIETA SERGIO ARTURO",mat:"Instala sistemas de energía solar térmica"},{m:"MEDIETA SERGIO ARTURO",mat:"Opera sistemas de energía solar térmica"},{m:"MEDINA CARLOS",mat:"Ciencias Sociales II"},{m:"PORTUGAL RODRIGUEZ ALMA GUADALUPE",mat:"Lengua y Comunicación II"},{m:"SALAS DE LA CRUZ MARIA PAULA",mat:"Ingles II"}],
+  "2H":[{m:"CAROLINA CASTILLO LUEVANO",mat:"Ciencias Naturales II"},{m:"HERRERA CRUZ YURIKO ANAHI",mat:"Ingles II"},{m:"PADILLA GONZALEZ CLARA ESMERALDA",mat:"Ciencias Sociales II"},{m:"PADILLA GONZALEZ CLARA ESMERALDA",mat:"Lengua y Comunicación II"},{m:"VELARDE GONZALEZ LAURA DENISE",mat:"Formula información financiera"},{m:"VILLALOBOS ORTEGA BRENDA SARAHI",mat:"Cultura Digital II"},{m:"VILLALOBOS ORTEGA BRENDA SARAHI",mat:"Pensamiento Matemático II"},{m:"VILLALOBOS ORTEGA BRENDA SARAHI",mat:"Registra operaciones contables"}],
+  "2I":[{m:"CAROLINA CASTILLO LUEVANO",mat:"Ciencias Naturales II"},{m:"ESCARZAGA RAMIREZ KARLA LUCINA",mat:"Realiza toma de muestras"},{m:"ESCARZAGA RAMIREZ KARLA LUCINA",mat:"Prepara equipo de laboratorio"},{m:"ESCOBEDO ROBLEDO CLAUDIA LYLY",mat:"Lengua y Comunicación II"},{m:"NUÑEZ GONZALEZ MA. CONSEPCION",mat:"Pensamiento Matemático II"},{m:"PADILLA GONZALEZ CLARA ESMERALDA",mat:"Ciencias Sociales II"},{m:"SALAS DE LA CRUZ MARIA PAULA",mat:"Ingles II"},{m:"SANDOVAL MACIAS OLGA YADIRA",mat:"Prepara reactivos y soluciones"},{m:"VILLALOBOS ORTEGA BRENDA SARAHI",mat:"Cultura Digital II"}],
+  "4A":[{m:"BAUTISTA VILLALPANDO CARLOS ALBERTO",mat:"Ciencias Sociales III"},{m:"FUENTES CHAVEZ MARTIN",mat:"Conciencia Histórica I"},{m:"HERRERA CRUZ YURIKO ANAHI",mat:"Ingles IV"},{m:"LICON AGUILERA KARINA AMELIA",mat:"Promueve condiciones de trabajo saludables"},{m:"ORNELAS MARTINEZ JOSE DE JESUS",mat:"Temas Selectos de matemáticas I"},{m:"PADILLA CONTRERAS SANDRA",mat:"Reacciones químicas"},{m:"RODRIGUEZ DIAZ NAIELI",mat:"Gestiona procesos de capacitación"},{m:"SALAS DE LA CRUZ MARIA PAULA",mat:"Ingles IV"}],
+  "4B":[{m:"AYALA HARO PETRA",mat:"Emplea técnicas clásicas de análisis cuantitativo"},{m:"BAUTISTA VILLALPANDO CARLOS ALBERTO",mat:"Ciencias Sociales III"},{m:"DIAZ VAZQUEZ CECILIA",mat:"Cuantifica microorganismos"},{m:"FUENTES CHAVEZ MARTIN",mat:"Conciencia Histórica I"},{m:"ORNELAS MARTINEZ JOSE DE JESUS",mat:"Temas Selectos de matemáticas I"},{m:"PADILLA CONTRERAS SANDRA",mat:"Reacciones químicas"},{m:"SANDOVAL MACIAS OLGA YADIRA",mat:"Realiza análisis cuantitativos"}],
+  "4C":[{m:"FUENTES CHAVEZ MARTIN",mat:"Conciencia Histórica I"},{m:"ORNELAS MARTINEZ JOSE DE JESUS",mat:"Temas Selectos de matemáticas I"},{m:"PADILLA CONTRERAS SANDRA",mat:"Reacciones químicas"},{m:"PADILLA GONZALEZ CLARA ESMERALDA",mat:"Ciencias Sociales III"},{m:"RODRIGUEZ DIAZ NAIELI",mat:"Gestiona procesos de capacitación"},{m:"SILVA GOMEZ KAROL ESTEFANIA",mat:"Ingles IV"},{m:"SILVA MARTIN",mat:"Promueve condiciones de trabajo saludables"}],
+  "4D":[{m:"ESCARZAGA RAMIREZ KARLA LUCINA",mat:"Emplea técnicas clásicas de análisis cuantitativo"},{m:"HERRERA CRUZ YURIKO ANAHI",mat:"Ingles IV"},{m:"MEDINA CARLOS",mat:"Conciencia Histórica I"},{m:"MEDINA CARLOS",mat:"Ciencias Sociales III"},{m:"PEREZ ESPARZA GEOVANA ALEJANDRA",mat:"Cuantifica microorganismos"},{m:"PEREZ ESPARZA GEOVANA ALEJANDRA",mat:"Realiza análisis cuantitativos"},{m:"SANCHEZ MACIAS GEORGINA",mat:"Reacciones químicas"},{m:"SANTOS MARTELL DIANA MARCELA",mat:"Temas Selectos de matemáticas I"}],
+  "4E":[{m:"CHAVEZ CHAVEZ EDGAR RICARDO",mat:"Gestiona procesos de capacitación"},{m:"CHAGOYA CORTES PAULINA YOLANDA",mat:"Promueve condiciones de trabajo saludables"},{m:"ESPINO JASMER JOSE LUIS",mat:"Ciencias Sociales III"},{m:"SANCHEZ MACIAS GEORGINA",mat:"Reacciones químicas"},{m:"SANTILLAN ACOSTA MIRIAM",mat:"Conciencia Histórica I"},{m:"SERRANO MORADO TRINIDAD",mat:"Temas Selectos de matemáticas I"},{m:"SILVA GOMEZ KAROL ESTEFANIA",mat:"Ingles IV"}],
+  "4F":[{m:"BERNAL REYES RICARDO",mat:"Temas Selectos de matemáticas I"},{m:"GARCIA LORENZO TERESITA DE JESUS",mat:"Emplea técnicas clásicas de análisis cuantitativo"},{m:"HERRERA CRUZ YURIKO ANAHI",mat:"Ingles IV"},{m:"PEREZ ESPARZA GEOVANA ALEJANDRA",mat:"Cuantifica microorganismos"},{m:"PEREZ ESPARZA GEOVANA ALEJANDRA",mat:"Realiza análisis cuantitativos"},{m:"PORTUGAL RODRIGUEZ ALMA GUADALUPE",mat:"Conciencia Histórica I"},{m:"RAMIREZ ALBA NOE",mat:"Ciencias Sociales III"},{m:"SANCHEZ MACIAS GEORGINA",mat:"Reacciones químicas"}],
+  "4G":[{m:"BERNAL REYES RICARDO",mat:"Temas Selectos de matemáticas I"},{m:"HERRERA CRUZ YURIKO ANAHI",mat:"Ingles IV"},{m:"MEDIETA SERGIO ARTURO",mat:"Instala sistemas de energía eólica"},{m:"MEDIETA SERGIO ARTURO",mat:"Opera sistemas de energía eólica"},{m:"MEDIETA SERGIO ARTURO",mat:"Realiza mantenimiento a sistemas de energía eólica"},{m:"MEDINA CARLOS",mat:"Ciencias Sociales III"},{m:"SANCHEZ MACIAS GEORGINA",mat:"Reacciones químicas"},{m:"SANTILLAN ACOSTA MIRIAM",mat:"Conciencia Histórica I"}],
+  "4H":[{m:"BAUTISTA VILLALPANDO CARLOS ALBERTO",mat:"Ciencias Sociales III"},{m:"FUENTES CHAVEZ MARTIN",mat:"Conciencia Histórica I"},{m:"ORNELAS MARTINEZ JOSE DE JESUS",mat:"Temas Selectos de matemáticas I"},{m:"PADILLA CONTRERAS SANDRA",mat:"Reacciones químicas"},{m:"RAZO DELGADO ABIGAIL",mat:"Determina contribuciones fiscales de personas físicas"},{m:"SALAS DE LA CRUZ MARIA PAULA",mat:"Ingles IV"},{m:"VELARDE GONZALEZ LAURA DENISE",mat:"Determina contribuciones fiscales de personas Morales"}],
+  "6A":[{m:"BECERRIL ALBA MARCO VINICIO",mat:"Humanidades III"},{m:"CAROLINA CASTILLO LUEVANO",mat:"Temas Selectos de matemáticas III"},{m:"FUENTES CHAVEZ MARTIN",mat:"Conciencia Histórica III"},{m:"GONZALEZ RAMOS LAURA ALICIA",mat:"Optativa Humanismo y Pensamiento Filosófico"},{m:"ROBLEDO SANTOYO NORMA ANGELICA",mat:"Determina remuneraciones del personal"},{m:"SANDOVAL MACIAS OLGA YADIRA",mat:"Organismos. Estructuras y procesos."},{m:"TENORIO PALOMINO SANDRA CRISTINA",mat:"Determina la nómina del personal"}],
+  "6B":[{m:"AYALA HARO PETRA",mat:"Analiza muestras de agua y suelos"},{m:"BAUTISTA VILLALPANDO CARLOS ALBERTO",mat:"Optativa Interacciones Humanas con la Naturaleza"},{m:"CASTRO LUIS MARTIN",mat:"Conciencia Histórica III"},{m:"DIAZ VAZQUEZ CECILIA",mat:"Elabora un producto"},{m:"GONZALEZ RAMOS LAURA ALICIA",mat:"Humanidades III"},{m:"HERNANDEZ ESTRADA JULIETA",mat:"Temas Selectos de matemáticas III"},{m:"SANDOVAL MACIAS OLGA YADIRA",mat:"Organismos. Estructuras y procesos."}],
+  "6C":[{m:"BAUTISTA VILLALPANDO CARLOS ALBERTO",mat:"Organismos. Estructuras y procesos."},{m:"FUENTES CHAVEZ MARTIN",mat:"Conciencia Histórica III"},{m:"GONZALEZ RAMOS LAURA ALICIA",mat:"Humanidades III"},{m:"HERNANDEZ ESTRADA JULIETA",mat:"Temas Selectos de matemáticas III"},{m:"ORNELAS URZUA OMAR ORLANDO",mat:"Optativa Humanismo y Pensamiento Filosófico"},{m:"ROBLEDO SANTOYO NORMA ANGELICA",mat:"Determina remuneraciones del personal"},{m:"TENORIO PALOMINO SANDRA CRISTINA",mat:"Determina la nómina del personal"}],
+  "6D":[{m:"ESPINO JASMER JOSE LUIS",mat:"Conciencia Histórica III"},{m:"MARTINEZ ELIA ANAYANSI",mat:"Optativa Interacciones Humanas con la Naturaleza"},{m:"MARTINEZ ELIA ANAYANSI",mat:"Organismos. Estructuras y procesos."},{m:"REYNA MARTINEZ GRACIELA ELIZABETH",mat:"Analiza muestras de agua y suelos"},{m:"SANCHEZ RENDON ANA BELEN",mat:"Elabora un producto"},{m:"SERRANO MORADO TRINIDAD",mat:"Temas Selectos de matemáticas III"}],
+  "6E":[{m:"ESPINO JASMER JOSE LUIS",mat:"Determina remuneraciones del personal"},{m:"MEDINA CARLOS",mat:"Optativa Humanismo y Pensamiento Filosófico"},{m:"PORTUGAL RODRIGUEZ ALMA GUADALUPE",mat:"Humanidades III"},{m:"ROBLEDO SANTOYO NORMA ANGELICA",mat:"Determina la nómina del personal"},{m:"SANTILLAN ACOSTA MIRIAM",mat:"Conciencia Histórica III"},{m:"SERRANO MORADO TRINIDAD",mat:"Temas Selectos de matemáticas III"}],
+  "6F":[{m:"ESPINO JASMER JOSE LUIS",mat:"Humanidades III"},{m:"MARTINEZ ELIA ANAYANSI",mat:"Organismos. Estructuras y procesos."},{m:"MARTINEZ ELIA ANAYANSI",mat:"Optativa Interacciones Humanas con la Naturaleza"},{m:"MEDINA CARLOS",mat:"Conciencia Histórica III"},{m:"REYNA MARTINEZ GRACIELA ELIZABETH",mat:"Elabora un producto"},{m:"REYNA MARTINEZ GRACIELA ELIZABETH",mat:"Analiza muestras de agua y suelos"},{m:"SERRANO MORADO TRINIDAD",mat:"Temas Selectos de matemáticas III"}],
+  "6G":[{m:"BERNAL REYES RICARDO",mat:"Temas Selectos de matemáticas III"},{m:"CHAVEZ CHAVEZ EDGAR RICARDO",mat:"Realiza la venta de los servicios de sistemas de energía solar"},{m:"ESCARZAGA RAMIREZ KARLA LUCINA",mat:"Optativa Interacciones Humanas con la Naturaleza"},{m:"ESPINO JASMER JOSE LUIS",mat:"Conciencia Histórica III"},{m:"FUENTES CHAVEZ MARTIN",mat:"Humanidades III"},{m:"MEDIETA SERGIO ARTURO",mat:"Maneja técnicas de atención al cliente"},{m:"MEDIETA SERGIO ARTURO",mat:"Realiza la cuantificación, presupuestación"},{m:"OLIVA VALENCIA CESAR",mat:"Realiza mantenimiento a sistemas de energía solar"},{m:"SANCHEZ MACIAS GEORGINA",mat:"Organismos. Estructuras y procesos."}],
+  "6H":[{m:"BAUTISTA VILLALPANDO CARLOS ALBERTO",mat:"Organismos. Estructuras y procesos."},{m:"FUENTES CHAVEZ MARTIN",mat:"Conciencia Histórica III"},{m:"GONZALEZ RAMOS LAURA ALICIA",mat:"Humanidades III"},{m:"HERNANDEZ ESTRADA JULIETA",mat:"Temas Selectos de matemáticas III"},{m:"MOLINA GONZALEZ MARTHA VERÓNICA",mat:"Optativa Humanismo y Pensamiento Filosófico"},{m:"RAZO DELGADO ABIGAIL",mat:"Controla cuentas por cobrar y por pagar"},{m:"VELARDE GONZALEZ LAURA DENISE",mat:"Verifica información contable"}],
+};
+
+function token(g){let h=0;for(let i=0;i<g.length;i++)h=(Math.imul(31,h)+g.charCodeAt(i))|0;return Math.abs(h).toString(36).toUpperCase().padStart(6,"0");}
+
+// Estado global
+let estado={vista:"inicio",grupo:null,paso:0,respAll:{},comAll:{}};
+
+function render(html){document.getElementById("app").innerHTML=html;}
+
+function enviarFila(grupo,docente,materia,resps,comentario){
+  return new Promise(resolve=>{
+    const p=new URLSearchParams({
+      fecha:new Date().toLocaleString("es-MX"),
+      grupo,docente,materia,
+      p1:resps[0]||"",p2:resps[1]||"",p3:resps[2]||"",
+      p4:resps[3]||"",p5:resps[4]||"",p6:resps[5]||"",
+      p7:resps[6]||"",p8:resps[7]||"",p9:resps[8]||"",
+      p10:resps[9]||"",comentarios:comentario||""
+    });
+    fetch(SCRIPT_URL+"?"+p.toString(),{mode:"no-cors"})
+      .then(()=>resolve(true)).catch(()=>resolve(false));
+    setTimeout(()=>resolve(true),8000);
+  });
+}
+
+// ── VISTAS ────────────────────────────────────────────────────────
+function vistaInicio(){
+  const gs=Object.keys(GRUPOS).sort();
+  render(`
+    <div style="min-height:100vh;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;padding:20px">
+      <div style="background:#fff;border-radius:20px;padding:40px;max-width:440px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.2)">
+        <div style="text-align:center;margin-bottom:28px">
+          <div style="font-size:56px">🎓</div>
+          <h1 style="margin:12px 0 4px;color:#1f2937;font-size:22px">Evaluación Docente</h1>
+          <p style="color:#6b7280;font-size:13px">CBTis 281 — Ingresa el código de tu grupo</p>
+        </div>
+        <input id="cod" placeholder="Código de grupo" oninput="this.value=this.value.toUpperCase()"
+          style="width:100%;padding:14px;border-radius:10px;border:2px solid #e5e7eb;font-size:18px;text-align:center;letter-spacing:4px;font-weight:800;outline:none;box-sizing:border-box"
+          onkeydown="if(event.key==='Enter')acceder()"/>
+        <p id="err" style="color:#ef4444;font-size:13px;text-align:center;margin-top:8px;display:none">Código no encontrado.</p>
+        <button class="btn-primary" style="margin-top:14px" onclick="acceder()">Acceder →</button>
+        <button class="btn-secondary" style="margin-top:10px" onclick="irAdmin()">⚙️ Administrador</button>
+      </div>
+    </div>`);
+}
+
+function acceder(){
+  const cod=document.getElementById("cod").value.trim().toUpperCase();
+  let g=Object.keys(GRUPOS).find(k=>k===cod)||Object.keys(GRUPOS).find(k=>token(k)===cod);
+  if(g){estado.grupo=g;estado.paso=0;estado.respAll={};estado.comAll={};vistaFormulario();}
+  else{document.getElementById("err").style.display="block";}
+}
+
+function irAdmin(){
+  render(`
+    <div class="center" style="background:#f9fafb">
+      <div style="background:#fff;border-radius:16px;padding:36px;max-width:360px;width:100%;box-shadow:0 4px 24px rgba(0,0,0,.1);text-align:center">
+        <div style="font-size:48px">🔐</div>
+        <h2 style="margin-bottom:20px">Panel Admin</h2>
+        <input type="password" id="pass" placeholder="Contraseña" style="width:100%;padding:12px;border-radius:8px;border:1px solid #d1d5db;font-size:15px;box-sizing:border-box;margin-bottom:12px"
+          onkeydown="if(event.key==='Enter')checkPass()"/>
+        <button class="btn-primary" onclick="checkPass()">Entrar</button>
+        <button class="btn-secondary" style="margin-top:8px" onclick="vistaInicio()">← Volver</button>
+        <p style="font-size:12px;color:#9ca3af;margin-top:12px">¿Olvidaste tu contraseña? Contacta al administrador.</p>
+      </div>
+    </div>`);
+}
+
+function checkPass(){
+  if(document.getElementById("pass").value===ADMIN_PASS) vistaAdmin();
+  else alert("Contraseña incorrecta");
+}
+
+function vistaFormulario(){
+  const g=estado.grupo;
+  const docs=GRUPOS[g];
+  const idx=estado.paso;
+  const doc=docs[idx];
+  const key=doc.m+"|||"+doc.mat;
+  const respD=estado.respAll[key]||{};
+  const comD=estado.comAll[key]||"";
+  const pct=Math.round((idx/docs.length)*100);
+
+  let pregHtml="";
+  PREGUNTAS.forEach((preg,i)=>{
+    const esUlt=i===PREGUNTAS.length-1;
+    const ops=esUlt?GEN:FREC;
+    const cols=esUlt?COLG:COLF;
+    let btns=ops.map(op=>{
+      const sel=respD[i]===op;
+      return `<button class="opt-btn${sel?" sel":""}" style="${sel?`background:${cols[op]};border-color:${cols[op]};color:#fff`:""}"
+        onclick="setResp(${i},'${op}')">${op}</button>`;
+    }).join("");
+    pregHtml+=`
+      <div style="margin-bottom:24px;padding-bottom:20px;border-bottom:${i<PREGUNTAS.length-1?"1px solid #f3f4f6":"none"}">
+        <p style="margin:0 0 12px;color:#1f2937;font-weight:600;font-size:14px;line-height:1.5">${i+1}. ${preg}</p>
+        <div style="display:flex;flex-wrap:wrap">${btns}</div>
+      </div>`;
+  });
+
+  render(`
+    <div style="min-height:100vh;background:#f9fafb">
+      <div class="header"><h2>🎓 Evaluación Docente — Grupo ${g}</h2></div>
+      <div style="max-width:720px;margin:0 auto;padding:20px 16px">
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+        <p style="text-align:right;font-size:12px;color:#6b7280;margin-bottom:18px">Docente ${idx+1} de ${docs.length}</p>
+        <div class="card">
+          <div style="background:#f5f3ff;border-radius:10px;padding:14px 18px;margin-bottom:24px">
+            <p class="label-sm">Docente</p>
+            <h2 style="color:#1f2937;font-size:17px;margin-bottom:4px">${doc.m}</h2>
+            <p style="color:#6b7280;font-size:13px">📚 ${doc.mat}</p>
+          </div>
+          ${pregHtml}
+          <div style="margin-top:8px;padding-top:20px;border-top:1px solid #f3f4f6">
+            <p style="margin:0 0 8px;color:#1f2937;font-weight:600;font-size:14px">💬 Comentarios finales (opcional)</p>
+            <textarea id="com" rows="3" placeholder="Escribe aquí cualquier comentario adicional..."
+              style="width:100%;box-sizing:border-box;padding:10px 14px;border-radius:10px;border:1px solid #e5e7eb;font-size:14px">${comD}</textarea>
+          </div>
+          <button class="btn-primary" style="margin-top:16px" onclick="siguiente()">
+            ${idx<docs.length-1?"Siguiente docente →":"Enviar evaluación ✓"}
+          </button>
+        </div>
+      </div>
+    </div>`);
+}
+
+function setResp(i,val){
+  const g=estado.grupo;
+  const doc=GRUPOS[g][estado.paso];
+  const key=doc.m+"|||"+doc.mat;
+  if(!estado.respAll[key])estado.respAll[key]={};
+  estado.respAll[key][i]=val;
+  // guardar comentario antes de re-render
+  const com=document.getElementById("com");
+  if(com)estado.comAll[key]=com.value;
+  vistaFormulario();
+}
+
+async function siguiente(){
+  const g=estado.grupo;
+  const docs=GRUPOS[g];
+  const idx=estado.paso;
+  const doc=docs[idx];
+  const key=doc.m+"|||"+doc.mat;
+  // guardar comentario
+  const com=document.getElementById("com");
+  if(com)estado.comAll[key]=com.value;
+  // validar
+  const respD=estado.respAll[key]||{};
+  if(!PREGUNTAS.every((_,i)=>respD[i])){alert("Por favor responde todas las preguntas.");return;}
+  if(idx<docs.length-1){estado.paso++;vistaFormulario();return;}
+  // enviar todo
+  render(`<div class="center"><div style="text-align:center;padding:40px"><div style="font-size:56px">📤</div><h2 style="color:#6366f1;margin-top:16px">Guardando evaluación...</h2><p style="color:#6b7280">Enviando a Google Sheets, por favor espera.</p></div></div>`);
+  for(const d of docs){
+    const k=d.m+"|||"+d.mat;
+    const rs=estado.respAll[k]||{};
+    await enviarFila(g,d.m,d.mat,PREGUNTAS.map((_,i)=>rs[i]||""),estado.comAll[k]||"");
+  }
+  render(`<div class="center"><div style="text-align:center;padding:40px;max-width:420px">
+    <div style="font-size:72px">✅</div>
+    <h2 style="color:#10b981;margin-top:16px">¡Evaluación enviada!</h2>
+    <p style="color:#6b7280">Tus respuestas fueron registradas. ¡Gracias por participar!</p>
+    <button class="btn-primary" style="margin-top:24px;max-width:200px" onclick="vistaInicio()">Volver al inicio</button>
+  </div></div>`);
+}
+
+function vistaAdmin(){
+  const gs=Object.keys(GRUPOS).sort();
+  let filas=gs.map(g=>`
+    <tr>
+      <td style="padding:10px 14px;font-weight:600">${g}</td>
+      <td style="padding:10px 14px;color:#6b7280;font-size:13px">${GRUPOS[g].length} docentes</td>
+      <td style="padding:10px 14px">
+        <input readonly value="${token(g)}" onclick="this.select()"
+          class="token-input" style="width:130px;padding:6px 10px;font-size:16px;letter-spacing:4px"/>
+      </td>
+    </tr>`).join("");
+
+  render(`
+    <div style="min-height:100vh;background:#f9fafb">
+      <div class="header" style="display:flex;justify-content:space-between;align-items:center">
+        <h2>⚙️ Panel Administrativo — CBTis 281</h2>
+        <button onclick="vistaInicio()" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:8px 16px;border-radius:8px;cursor:pointer;font-weight:600">← Salir</button>
+      </div>
+      <div style="max-width:800px;margin:0 auto;padding:24px 16px">
+        <div class="card">
+          <h3 style="margin-bottom:16px">🔑 Códigos de acceso por grupo</h3>
+          <p style="color:#6b7280;font-size:13px;margin-bottom:16px">Comparte el código de cada grupo con sus alumnos. Haz clic en el código para seleccionarlo y cópialo con Ctrl+C.</p>
+          <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse">
+              <thead>
+                <tr style="background:#f3f4f6">
+                  <th style="padding:10px 14px;text-align:left;font-size:13px">Grupo</th>
+                  <th style="padding:10px 14px;text-align:left;font-size:13px">Docentes</th>
+                  <th style="padding:10px 14px;text-align:left;font-size:13px">Código de acceso</th>
+                </tr>
+              </thead>
+              <tbody>${filas}</tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card" style="background:#fef9c3;border:1px solid #fde68a">
+          <p style="color:#92400e;font-size:13px">📊 Para ver los resultados abre tu <strong>Google Sheet</strong> → pestaña <strong>"Evaluaciones"</strong>. Ahí están todos los datos guardados permanentemente.</p>
+        </div>
+      </div>
+    </div>`);
+}
+
+vistaInicio();
+</script>
+</body>
+</html>
